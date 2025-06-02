@@ -119,7 +119,7 @@ class ArticuloModel:
         connection = get_connection()
         cursor = connection.cursor()
         cursor.execute("""
-            SELECT C.id, C.descripcion 
+            SELECT C.id, C.nombre
             FROM CATEGORIAS C
             JOIN ARTICULOS_CATEGORIAS AC ON C.id = AC.categoria_id
             WHERE AC.articulo_id = %s
@@ -127,4 +127,4 @@ class ArticuloModel:
         rows = cursor.fetchall()
         cursor.close()
         connection.close()
-        return [CategoriaModel(id=row[0], descripcion=row[1]) for row in rows]
+        return [CategoriaModel(id=row[0], nombre=row[1]) for row in rows]

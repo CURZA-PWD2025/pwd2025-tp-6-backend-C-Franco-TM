@@ -4,8 +4,7 @@ class ArticuloController:
 
     @staticmethod
     def get_all():
-        articulos = ArticuloModel.get_all()
-        return [a.serializar() for a in articulos]
+        return ArticuloModel.get_all()
 
     @staticmethod
     def get_one(id):
