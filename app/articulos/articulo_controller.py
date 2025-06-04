@@ -10,14 +10,14 @@ class ArticuloController:
     def get_one(id):
         articulo = ArticuloModel.get_one(id)
         if articulo:
-            return articulo.serializar()
+            return articulo
         return {"error": "Artículo no encontrado"}
 
     @staticmethod
     def create(data):
         try:
             articulo = ArticuloModel.deserializar(data)
-            success = articulo.create(data)
+            success = articulo.create()
             if success:
                 return {"message": "Artículo creado correctamente"}
             else:
@@ -26,10 +26,11 @@ class ArticuloController:
             return {"error": str(e)}
 
     @staticmethod
-    def update(data):
+    def update(id, data):
         try:
+            data["id"] = id  # importante: agregar el ID al dict
             articulo = ArticuloModel.deserializar(data)
-            success = articulo.update(data)
+            success = articulo.update()
             if success:
                 return {"message": "Artículo actualizado correctamente"}
             else:

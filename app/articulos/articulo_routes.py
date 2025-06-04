@@ -22,8 +22,7 @@ def create_articulo():
 @articulo_bp.route('/<int:id>', methods=['PUT'])
 def update_articulo(id):
     data = request.json
-    data['id'] = id
-    result = ArticuloController.update(data)
+    result = ArticuloController.update(id, data)
     return jsonify(result)
 
 @articulo_bp.route('/<int:id>', methods=['DELETE'])
