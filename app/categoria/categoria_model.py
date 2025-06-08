@@ -1,66 +1,62 @@
-from app.database.conect_db import get_connection
+from app.database.conect_db import ConectDB
 
 class CategoriaModel:
-    def __init__(self, id=None, nombre=None):
+    def __init__(self, id, nombre):
         self.id = id
         self.nombre = nombre
 
     def serializar(self):
         return {
-            'id': self.id,
-            'nombre': self.nombre
+            "id": self.id,
+            "nombre": self.nombre
         }
 
     @staticmethod
-    def deserializar(data):
-        return CategoriaModel(
-            id=data.get('id'),
-            nombre=data.get('nombre')
-        )
+    def get_by_id(id):
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("SELECT id, nombre FROM CATEGORIAS WHERE id = %s", (id,))
+        row = cursor.fetchone()
+        cursor.close()
+        cnx.close()
+        if row:
+            return CategoriaModel(id=row[0], nombre=row[1])
+        return None
 
     @staticmethod
     def get_all():
-        connection = get_connection()
-        categorias = []
-        with connection.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT id, nombre FROM CATEGORIAS")
-            rows = cursor.fetchall()
-            for row in rows:
-                categorias.append(CategoriaModel(**row).serializar())
-        connection.close()
-        return categorias
-
-    @staticmethod
-    def get_one(id):
-        connection = get_connection()
-        categoria = None
-        with connection.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT id, nombre FROM CATEGORIAS WHERE id = %s", (id,))
-            row = cursor.fetchone()
-            if row:
-                categoria = CategoriaModel(**row)
-        connection.close()
-        return categoria
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("SELECT id, nombre FROM CATEGORIAS")
+        rows = cursor.fetchall()
+        cursor.close()
+        cnx.close()
+        return [CategoriaModel(id=row[0], nombre=row[1]) for row in rows]
 
     def create(self):
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO CATEGORIAS (nombre) VALUES (%s)", (self.nombre,))
-            connection.commit()
-            self.id = cursor.lastrowid
-        connection.close()
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("INSERT INTO CATEGORIAS (nombre) VALUES (%s)", (self.nombre,))
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return True
 
     def update(self):
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute("UPDATE CATEGORIAS SET nombre = %s WHERE id = %s", (self.nombre, self.id))
-            connection.commit()
-        connection.close()
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("UPDATE CATEGORIAS SET nombre = %s WHERE id = %s", (self.nombre, self.id))
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return True
 
     @staticmethod
     def delete(id):
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM CATEGORIAS WHERE id = %s", (id,))
-            connection.commit()
-        connection.close()
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("DELETE FROM CATEGORIAS WHERE id = %s", (id,))
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return True

@@ -1,4 +1,4 @@
-from app.database.conect_db import get_connection
+from app.database.conect_db import ConectDB
 
 class ProveedorModel:
     def __init__(self, id, nombre, telefono, direccion, email):
@@ -10,67 +10,65 @@ class ProveedorModel:
 
     def serializar(self):
         return {
-            'id': self.id,
-            'nombre': self.nombre,
-            'telefono': self.telefono,
-            'direccion': self.direccion,
-            'email': self.email
+            "id": self.id,
+            "nombre": self.nombre,
+            "telefono": self.telefono,
+            "direccion": self.direccion,
+            "email": self.email
         }
 
     @staticmethod
-    def deserializar(data):
-        return ProveedorModel(
-            id=data.get('id'),
-            nombre=data['nombre'],
-            telefono=data['telefono'],
-            direccion=data['direccion'],
-            email=data['email']
-        )
+    def get_by_id(id):
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("SELECT id, nombre, telefono, direccion, email FROM PROVEEDORES WHERE id = %s", (id,))
+        row = cursor.fetchone()
+        cursor.close()
+        cnx.close()
+        if row:
+            return ProveedorModel(*row)
+        return None
 
     @staticmethod
     def get_all():
-        connection = get_connection()
-        with connection.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT * FROM PROVEEDORES")
-            rows = cursor.fetchall()
-        connection.close()
-        return [ProveedorModel(**row).serializar() for row in rows]
-
-    @staticmethod
-    def get_one(id):
-        connection = get_connection()
-        with connection.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT * FROM PROVEEDORES WHERE id = %s", (id,))
-            row = cursor.fetchone()
-        connection.close()
-        if row:
-            return ProveedorModel(**row)
-        return None
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("SELECT id, nombre, telefono, direccion, email FROM PROVEEDORES")
+        rows = cursor.fetchall()
+        cursor.close()
+        cnx.close()
+        return [ProveedorModel(*row) for row in rows]
 
     def create(self):
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "INSERT INTO PROVEEDORES (nombre, telefono, direccion, email) VALUES (%s, %s, %s, %s)",
-                (self.nombre, self.telefono, self.direccion, self.email)
-            )
-            connection.commit()
-        connection.close()
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute(
+            "INSERT INTO PROVEEDORES (nombre, telefono, direccion, email) VALUES (%s, %s, %s, %s)",
+            (self.nombre, self.telefono, self.direccion, self.email)
+        )
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return True
 
     def update(self):
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "UPDATE PROVEEDORES SET nombre = %s, telefono = %s, direccion = %s, email = %s WHERE id = %s",
-                (self.nombre, self.telefono, self.direccion, self.email, self.id)
-            )
-            connection.commit()
-        connection.close()
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute(
+            "UPDATE PROVEEDORES SET nombre = %s, telefono = %s, direccion = %s, email = %s WHERE id = %s",
+            (self.nombre, self.telefono, self.direccion, self.email, self.id)
+        )
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return True
 
     @staticmethod
     def delete(id):
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM PROVEEDORES WHERE id = %s", (id,))
-            connection.commit()
-        connection.close()
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("DELETE FROM PROVEEDORES WHERE id = %s", (id,))
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return True

@@ -1,60 +1,62 @@
-from app.database.conect_db import get_connection
+from app.database.conect_db import ConectDB
 
 class MarcaModel:
-    def __init__(self, id=None, nombre=None):
+    def __init__(self, id, nombre):
         self.id = id
         self.nombre = nombre
 
     def serializar(self):
         return {
-            'id': self.id,
-            'nombre': self.nombre
+            "id": self.id,
+            "nombre": self.nombre
         }
 
-    @classmethod
-    def get_all(cls):
-        connection = get_connection()
-        marcas = []
-        with connection.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT id, nombre FROM MARCAS")
-            rows = cursor.fetchall()
-            for row in rows:
-                marca = cls(**row)  # row = {'id': ..., 'nombre': ...}
-                marcas.append(marca.serializar())
-        connection.close()
-        return marcas
+    @staticmethod
+    def get_by_id(id):
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("SELECT id, nombre FROM MARCAS WHERE id = %s", (id,))
+        row = cursor.fetchone()
+        cursor.close()
+        cnx.close()
+        if row:
+            return MarcaModel(id=row[0], nombre=row[1])
+        return None
 
-    @classmethod
-    def get_by_id(cls, id):
-        connection = get_connection()
-        marca = None
-        with connection.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT id, nombre FROM MARCAS WHERE id = %s", (id,))
-            row = cursor.fetchone()
-            if row:
-                marca = cls(**row)
-        connection.close()
-        return marca
+    @staticmethod
+    def get_all():
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("SELECT id, nombre FROM MARCAS")
+        rows = cursor.fetchall()
+        cursor.close()
+        cnx.close()
+        return [MarcaModel(id=row[0], nombre=row[1]) for row in rows]
 
-    def save(self):
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO MARCAS (nombre) VALUES (%s)", (self.nombre,))
-            connection.commit()
-            self.id = cursor.lastrowid
-        connection.close()
-        return self
+    def create(self):
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("INSERT INTO MARCAS (nombre) VALUES (%s)", (self.nombre,))
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return True
 
     def update(self):
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute("UPDATE MARCAS SET nombre = %s WHERE id = %s", (self.nombre, self.id))
-            connection.commit()
-        connection.close()
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("UPDATE MARCAS SET nombre = %s WHERE id = %s", (self.nombre, self.id))
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return True
 
-    def delete(self):
-        connection = get_connection()
-        with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM MARCAS WHERE id = %s", (self.id,))
-            connection.commit()
-        connection.close()
+    @staticmethod
+    def delete(id):
+        cnx = ConectDB.get_connect()
+        cursor = cnx.cursor()
+        cursor.execute("DELETE FROM MARCAS WHERE id = %s", (id,))
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return True

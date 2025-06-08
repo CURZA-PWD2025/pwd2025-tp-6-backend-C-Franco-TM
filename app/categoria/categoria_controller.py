@@ -4,26 +4,38 @@ class CategoriaController:
 
     @staticmethod
     def get_all():
-        return CategoriaModel.get_all()
+        categorias = CategoriaModel.get_all()
+        return [c.serializar() for c in categorias]
 
     @staticmethod
     def get_one(id):
-        categoria = CategoriaModel.get_one(id)
-        return categoria.serializar() if categoria else {}
+        categoria = CategoriaModel.get_by_id(id)
+        if categoria:
+            return categoria.serializar()
+        return {"error": "Categoría no encontrada"}
 
     @staticmethod
     def create(data):
-        categoria = CategoriaModel.deserializar(data)
-        categoria.create()
-        return {'message': 'Categoría creada correctamente'}
+        try:
+            categoria = CategoriaModel(id=None, nombre=data.get("nombre"))
+            success = categoria.create()
+            return {"message": "Categoría creada correctamente"} if success else {"error": "No se pudo crear"}
+        except Exception as e:
+            return {"error": str(e)}
 
     @staticmethod
-    def update(data):
-        categoria = CategoriaModel.deserializar(data)
-        categoria.update()
-        return {'message': 'Categoría actualizada correctamente'}
+    def update(id, data):
+        try:
+            categoria = CategoriaModel(id=id, nombre=data.get("nombre"))
+            success = categoria.update()
+            return {"message": "Categoría actualizada correctamente"} if success else {"error": "No se pudo actualizar"}
+        except Exception as e:
+            return {"error": str(e)}
 
     @staticmethod
     def delete(id):
-        CategoriaModel.delete(id)
-        return {'message': 'Categoría eliminada correctamente'}
+        try:
+            success = CategoriaModel.delete(id)
+            return {"message": "Categoría eliminada correctamente"} if success else {"error": "No se pudo eliminar"}
+        except Exception as e:
+            return {"error": str(e)}
