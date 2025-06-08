@@ -27,8 +27,9 @@ class ArticuloController:
             return {"error": str(e)}
 
     @staticmethod
-    def update(data):
+    def update(id, data):
         try:
+            data['id'] = id
             articulo = ArticuloModel.deserializar(data)
             success = articulo.update()
             if success:
