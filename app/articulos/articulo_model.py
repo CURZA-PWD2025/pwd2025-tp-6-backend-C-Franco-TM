@@ -11,13 +11,13 @@ class ArticuloModel:
         self.stock = stock
         self.marca = marca  # MarcaModel
         self.proveedor = proveedor  # ProveedorModel
-        self.categorias = categorias if categorias else []
+        self.categorias = categorias if categorias else []  # list[CategoriaModel]
 
     def serializar(self):
         return {
             "id": self.id,
             "descripcion": self.descripcion,
-            "precio": self.precio,
+            "precio": str(self.precio),
             "stock": self.stock,
             "marca": self.marca.serializar() if self.marca else None,
             "proveedor": self.proveedor.serializar() if self.proveedor else None,
@@ -25,26 +25,10 @@ class ArticuloModel:
         }
 
     @staticmethod
-    def deserializar(data):
-        marca = MarcaModel.get_by_id(data.get("marca", {}).get("id"))
-        proveedor = ProveedorModel.get_by_id(data.get("proveedor", {}).get("id"))
-        categorias = [CategoriaModel.get_by_id(cat["id"]) for cat in data.get("categorias", [])]
-
-        return ArticuloModel(
-            id=data.get("id"),
-            descripcion=data.get("descripcion"),
-            precio=data.get("precio"),
-            stock=data.get("stock"),
-            marca=marca,
-            proveedor=proveedor,
-            categorias=categorias
-        )
-
-    @staticmethod
     def get_all():
         cnx = ConectDB.get_connect()
         cursor = cnx.cursor()
-        cursor.execute("SELECT id, descripcion, precio, stock, marca_id, proveedor_id FROM ARTICULOS")
+        cursor.execute("SELECT * FROM ARTICULOS")
         rows = cursor.fetchall()
 
         articulos = []
@@ -58,13 +42,13 @@ class ArticuloModel:
 
         cursor.close()
         cnx.close()
-        return articulos
+        return [a.serializar() for a in articulos]
 
     @staticmethod
     def get_one(id):
         cnx = ConectDB.get_connect()
         cursor = cnx.cursor()
-        cursor.execute("SELECT id, descripcion, precio, stock, marca_id, proveedor_id FROM ARTICULOS WHERE id = %s", (id,))
+        cursor.execute("SELECT * FROM ARTICULOS WHERE id = %s", (id,))
         row = cursor.fetchone()
         cursor.close()
         cnx.close()
@@ -74,7 +58,8 @@ class ArticuloModel:
             marca = MarcaModel.get_by_id(marca_id)
             proveedor = ProveedorModel.get_by_id(proveedor_id)
             categorias = ArticuloModel.get_categorias_by_articulo_id(id)
-            return ArticuloModel(id, descripcion, precio, stock, marca, proveedor, categorias)
+            articulo = ArticuloModel(id, descripcion, precio, stock, marca, proveedor, categorias)
+            return articulo
         return None
 
     def create(self):
@@ -91,11 +76,9 @@ class ArticuloModel:
                 "INSERT INTO ARTICULOS_CATEGORIAS (articulo_id, categoria_id) VALUES (%s, %s)",
                 (self.id, categoria.id)
             )
-
         cnx.commit()
         cursor.close()
         cnx.close()
-        return True
 
     def update(self):
         cnx = ConectDB.get_connect()
@@ -113,7 +96,6 @@ class ArticuloModel:
         cnx.commit()
         cursor.close()
         cnx.close()
-        return True
 
     @staticmethod
     def delete(id):
