@@ -1,0 +1,28 @@
+<template>
+  <nav class="navbar">
+    <router-link to="/">Home</router-link>
+    <router-link to="/marcas">Marcas</router-link>
+    <router-link to="/categorias">Categorías</router-link>
+    <router-link to="/proveedores">Proveedores</router-link>
+    <router-link to="/articulos">Artículos</router-link>
+  </nav>
+</template>
+
+<script setup lang="ts">
+
+</script>
+
+<style scoped>
+.navbar {
+  background-color: #f8f8f8;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.router-link-active {
+  font-weight: bold;
+  color: #42b983;
+}
+</style>
